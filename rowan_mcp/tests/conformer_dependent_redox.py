@@ -5,7 +5,9 @@ import rowan
 
 # rowan.api_key = ""
 
-conformer_dependent_redox_folder = rowan.create_folder(name="Conformer dependent redox results")
+conformer_dependent_redox_folder = rowan.create_folder(
+    name="Conformer dependent redox results"
+)
 
 result = rowan.submit_conformer_search_workflow(
     initial_molecule=Molecule.from_smiles("CC(C)Cc1ccc(C(=O)c2ccc(O)cc2)cc1"),

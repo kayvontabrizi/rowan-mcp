@@ -9,19 +9,40 @@ import stjames
 import json
 from stjames.pdb import PDB, read_pdb
 
+
 def submit_docking_workflow(
     protein: Annotated[str, "Protein UUID or PDB content/path for docking target"],
-    pocket: Annotated[str, "JSON string defining binding pocket as [[x1,y1,z1], [x2,y2,z2]] corner coordinates"],
+    pocket: Annotated[
+        str,
+        "JSON string defining binding pocket as [[x1,y1,z1], [x2,y2,z2]] corner coordinates",
+    ],
     initial_molecule: Annotated[str, "SMILES string of the ligand molecule to dock"],
-    executable: Annotated[str, "Docking software to use: 'vina', 'qvina2', 'smina'"] = "vina",
-    scoring_function: Annotated[str, "Scoring function: 'vina', 'vinardo', 'ad4'"] = "vinardo",
-    exhaustiveness: Annotated[float, "Search exhaustiveness parameter (higher = more thorough, slower)"] = 8,
-    do_csearch: Annotated[bool, "Whether to perform conformer search before docking"] = False,
+    executable: Annotated[
+        str, "Docking software to use: 'vina', 'qvina2', 'smina'"
+    ] = "vina",
+    scoring_function: Annotated[
+        str, "Scoring function: 'vina', 'vinardo', 'ad4'"
+    ] = "vinardo",
+    exhaustiveness: Annotated[
+        float, "Search exhaustiveness parameter (higher = more thorough, slower)"
+    ] = 8,
+    do_csearch: Annotated[
+        bool, "Whether to perform conformer search before docking"
+    ] = False,
     do_optimization: Annotated[bool, "Whether to optimize docked poses"] = False,
-    do_pose_refinement: Annotated[bool, "Whether to optimize output poses with non-rotatable bond refinement"] = False,
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Docking Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0,
+    do_pose_refinement: Annotated[
+        bool, "Whether to optimize output poses with non-rotatable bond refinement"
+    ] = False,
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Docking Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submits a Docking workflow to the API.
 
@@ -38,12 +59,12 @@ def submit_docking_workflow(
         name: Workflow name for identification and tracking
         folder_uuid: UUID of folder to organize this workflow. Empty string uses default folder.
         max_credits: Maximum credits to spend on this calculation. 0 for no limit.
-    
+
     Automatically handles protein creation from PDB ID and sanitization if needed.
-    
+
     Returns:
         Workflow object representing the submitted workflow
-        
+
     Examples:
         # Example 1: Using PDB ID directly
         result = submit_docking_workflow(
@@ -69,11 +90,12 @@ def submit_docking_workflow(
 
     """
     import logging
+
     logger = logging.getLogger(__name__)
-    
+
     # Handle protein parameter
     protein_obj = None
-    
+
     # Try to parse protein as JSON first
     try:
         protein_dict = json.loads(protein)
@@ -82,18 +104,18 @@ def submit_docking_workflow(
     except (json.JSONDecodeError, ValueError):
         # Not JSON, keep as string
         pass
-    
+
     # Check if protein is a PDB ID or dict with PDB ID
     if isinstance(protein, str):
         # Check if it's a UUID (36 chars with dashes) or PDB ID (4 chars)
-        if len(protein) == 36 and '-' in protein:
+        if len(protein) == 36 and "-" in protein:
             # It's a UUID, retrieve the protein
             logger.info(f"Using existing protein UUID: {protein}")
             protein_obj = rowan.retrieve_protein(protein)
         elif len(protein) <= 6:  # PDB IDs are typically 4 characters
             # It's a PDB ID, create protein from it
             logger.info(f"Creating protein from PDB ID: {protein}")
-            
+
             # Get or create a project (REQUIRED for v2.1.1)
             project_uuid = None
             try:
@@ -116,49 +138,58 @@ def submit_docking_workflow(
                         logger.info(f"Created new project: {project_uuid}")
                 except Exception as e2:
                     logger.error(f"Failed to get/create project: {e2}")
-                    raise ValueError(f"Cannot create protein without a valid project. Error: {e2}")
-            
+                    raise ValueError(
+                        f"Cannot create protein without a valid project. Error: {e2}"
+                    )
+
             # Create protein with REQUIRED project_uuid
             protein_obj = rowan.create_protein_from_pdb_id(
-                name=f"Protein from {protein}",
-                code=protein,
-                project_uuid=project_uuid
+                name=f"Protein from {protein}", code=protein, project_uuid=project_uuid
             )
             logger.info(f"Created protein with UUID: {protein_obj.uuid}")
-            
+
             # Sanitize the protein for docking
             logger.info("Sanitizing protein for docking...")
             try:
                 protein_obj.sanitize()
-                
+
                 # Wait for sanitization to complete
                 import time
+
                 max_wait = 30
                 start_time = time.time()
                 while time.time() - start_time < max_wait:
                     time.sleep(2)
                     protein_obj.refresh()
                     if protein_obj.sanitized and protein_obj.sanitized != 0:
-                        logger.info(f"Protein sanitized successfully (sanitized={protein_obj.sanitized})")
+                        logger.info(
+                            f"Protein sanitized successfully (sanitized={protein_obj.sanitized})"
+                        )
                         break
                 else:
-                    logger.warning(f"Sanitization may not be complete after {max_wait} seconds")
+                    logger.warning(
+                        f"Sanitization may not be complete after {max_wait} seconds"
+                    )
             except Exception as e:
                 logger.warning(f"Sanitization failed: {e}")
-                logger.warning("Proceeding without sanitization - docking may fail if protein needs sanitization")
+                logger.warning(
+                    "Proceeding without sanitization - docking may fail if protein needs sanitization"
+                )
         else:
-            raise ValueError(f"Invalid protein parameter: {protein}. Expected PDB ID (4 chars) or UUID (36 chars)")
-            
+            raise ValueError(
+                f"Invalid protein parameter: {protein}. Expected PDB ID (4 chars) or UUID (36 chars)"
+            )
+
     elif isinstance(protein, dict):
         # Dict with PDB ID and optional name
-        pdb_id = protein.get('pdb_id')
-        protein_name = protein.get('name', f"Protein from {pdb_id}")
-        
+        pdb_id = protein.get("pdb_id")
+        protein_name = protein.get("name", f"Protein from {pdb_id}")
+
         if not pdb_id:
             raise ValueError("Dict protein parameter must include 'pdb_id' key")
-            
+
         logger.info(f"Creating protein '{protein_name}' from PDB ID: {pdb_id}")
-        
+
         # Get or create a project (REQUIRED for v2.1.1)
         project_uuid = None
         try:
@@ -181,46 +212,55 @@ def submit_docking_workflow(
                     logger.info(f"Created new project: {project_uuid}")
             except Exception as e2:
                 logger.error(f"Failed to get/create project: {e2}")
-                raise ValueError(f"Cannot create protein without a valid project. Error: {e2}")
-        
+                raise ValueError(
+                    f"Cannot create protein without a valid project. Error: {e2}"
+                )
+
         # Create protein with REQUIRED project_uuid
         protein_obj = rowan.create_protein_from_pdb_id(
-            name=protein_name,
-            code=pdb_id,
-            project_uuid=project_uuid
+            name=protein_name, code=pdb_id, project_uuid=project_uuid
         )
         logger.info(f"Created protein with UUID: {protein_obj.uuid}")
-        
+
         # Sanitize the protein
         logger.info("Sanitizing protein for docking...")
         try:
             protein_obj.sanitize()
-            
+
             # Wait for sanitization
             import time
+
             max_wait = 30
             start_time = time.time()
             while time.time() - start_time < max_wait:
                 time.sleep(2)
                 protein_obj.refresh()
                 if protein_obj.sanitized and protein_obj.sanitized != 0:
-                    logger.info(f"Protein sanitized successfully (sanitized={protein_obj.sanitized})")
+                    logger.info(
+                        f"Protein sanitized successfully (sanitized={protein_obj.sanitized})"
+                    )
                     break
             else:
-                logger.warning(f"Sanitization may not be complete after {max_wait} seconds")
+                logger.warning(
+                    f"Sanitization may not be complete after {max_wait} seconds"
+                )
         except Exception as e:
             logger.warning(f"Sanitization failed: {e}")
-            logger.warning("Proceeding without sanitization - docking may fail if protein needs sanitization")
-            
+            logger.warning(
+                "Proceeding without sanitization - docking may fail if protein needs sanitization"
+            )
+
     else:
         # Assume it's already a protein object
         protein_obj = protein
-    
+
     # Parse pocket parameter (always a string in simplified version)
     try:
         pocket = json.loads(pocket)
     except (json.JSONDecodeError, ValueError) as e:
-        raise ValueError(f"Invalid pocket format: {pocket}. Expected JSON string like \"[[x1,y1,z1], [x2,y2,z2]]\"")
+        raise ValueError(
+            f'Invalid pocket format: {pocket}. Expected JSON string like "[[x1,y1,z1], [x2,y2,z2]]"'
+        )
 
     # Ensure pocket is a list of lists
     if not isinstance(pocket, list) or len(pocket) != 2:
@@ -228,7 +268,7 @@ def submit_docking_workflow(
 
     # Ensure each element is a list of floats
     pocket = [list(coord) for coord in pocket]
-    
+
     # Submit the workflow
     logger.info(f"Submitting docking workflow: {name}")
     workflow = rowan.submit_docking_workflow(
@@ -243,7 +283,7 @@ def submit_docking_workflow(
         do_pose_refinement=do_pose_refinement,
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

@@ -10,15 +10,38 @@ import json
 
 
 def submit_double_ended_ts_search_workflow(
-    reactant: Annotated[str, "Reactant SMILES string (e.g., 'C#N'). MUST have same atom count as product"],
-    product: Annotated[str, "Product SMILES string (e.g., '[C-]#[NH+]'). MUST have same atom count as reactant"],
-    calculation_settings: Annotated[str, "JSON string for calculation settings (method, basis set, etc.). Empty for defaults"] = "",
-    search_settings: Annotated[str, "JSON string for TS search settings (e.g., convergence criteria). Empty for defaults"] = "",
-    optimize_inputs: Annotated[bool, "Whether to optimize reactant and product geometries before TS search"] = False,
-    optimize_ts: Annotated[bool, "Whether to optimize the transition state after finding it"] = True,
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Double-Ended TS Search Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0
+    reactant: Annotated[
+        str,
+        "Reactant SMILES string (e.g., 'C#N'). MUST have same atom count as product",
+    ],
+    product: Annotated[
+        str,
+        "Product SMILES string (e.g., '[C-]#[NH+]'). MUST have same atom count as reactant",
+    ],
+    calculation_settings: Annotated[
+        str,
+        "JSON string for calculation settings (method, basis set, etc.). Empty for defaults",
+    ] = "",
+    search_settings: Annotated[
+        str,
+        "JSON string for TS search settings (e.g., convergence criteria). Empty for defaults",
+    ] = "",
+    optimize_inputs: Annotated[
+        bool, "Whether to optimize reactant and product geometries before TS search"
+    ] = False,
+    optimize_ts: Annotated[
+        bool, "Whether to optimize the transition state after finding it"
+    ] = True,
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Double-Ended TS Search Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a double-ended transition state search workflow using Rowan v2 API.
 
@@ -71,7 +94,7 @@ def submit_double_ended_ts_search_workflow(
     # Settings object expects "basis_set" not "basis", and "method"
     parsed_calc_settings = {
         "basis_set": "def2-svp",  # Default basis set (NOTE: basis_set not basis!)
-        "method": "b3lyp"         # Default method
+        "method": "b3lyp",  # Default method
     }
     if calculation_settings:
         try:
@@ -98,7 +121,7 @@ def submit_double_ended_ts_search_workflow(
         optimize_ts=optimize_ts,
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

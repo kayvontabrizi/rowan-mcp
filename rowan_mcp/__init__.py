@@ -11,4 +11,4 @@ __description__ = "MCP server for Rowan computational chemistry platform"
 
 from .server import main
 
-__all__ = ["main"] 
+__all__ = ["main"]

@@ -9,11 +9,24 @@ import json
 
 
 def submit_msa_workflow(
-    initial_protein_sequences: Annotated[str, "JSON string list of protein sequences (e.g., '[\"MKLLV...\", \"MAHQR...\"]')"],
-    output_formats: Annotated[str, "JSON string list of output formats - must be 'colabfold', 'chai', or 'boltz' (e.g., '[\"colabfold\", \"chai\"]')"],
-    name: Annotated[str, "Workflow name for identification and tracking"] = "MSA Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0
+    initial_protein_sequences: Annotated[
+        str,
+        'JSON string list of protein sequences (e.g., \'["MKLLV...", "MAHQR..."]\')',
+    ],
+    output_formats: Annotated[
+        str,
+        "JSON string list of output formats - must be 'colabfold', 'chai', or 'boltz' (e.g., '[\"colabfold\", \"chai\"]')",
+    ],
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "MSA Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a multiple sequence alignment (MSA) workflow using Rowan v2 API.
 
@@ -69,8 +82,10 @@ def submit_msa_workflow(
         parsed_sequences = json.loads(initial_protein_sequences)
     except (json.JSONDecodeError, ValueError):
         # Try comma-separated
-        if ',' in initial_protein_sequences:
-            parsed_sequences = [s.strip() for s in initial_protein_sequences.split(',') if s.strip()]
+        if "," in initial_protein_sequences:
+            parsed_sequences = [
+                s.strip() for s in initial_protein_sequences.split(",") if s.strip()
+            ]
         else:
             parsed_sequences = [initial_protein_sequences.strip()]
 
@@ -79,8 +94,8 @@ def submit_msa_workflow(
         parsed_formats = json.loads(output_formats)
     except (json.JSONDecodeError, ValueError):
         # Try comma-separated
-        if ',' in output_formats:
-            parsed_formats = [f.strip() for f in output_formats.split(',') if f.strip()]
+        if "," in output_formats:
+            parsed_formats = [f.strip() for f in output_formats.split(",") if f.strip()]
         else:
             parsed_formats = [output_formats.strip()]
 
@@ -89,7 +104,7 @@ def submit_msa_workflow(
         output_formats=parsed_formats,
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

@@ -12,42 +12,47 @@ logger = logging.getLogger(__name__)
 
 
 def molecule_lookup(
-    molecule_name: Annotated[str, "Common name, IUPAC name, or CAS number of molecule (e.g., 'aspirin', 'caffeine', '50-78-2')"],
-    fallback_to_input: Annotated[bool, "If lookup fails, return the input string assuming it might be SMILES"] = False
+    molecule_name: Annotated[
+        str,
+        "Common name, IUPAC name, or CAS number of molecule (e.g., 'aspirin', 'caffeine', '50-78-2')",
+    ],
+    fallback_to_input: Annotated[
+        bool, "If lookup fails, return the input string assuming it might be SMILES"
+    ] = False,
 ) -> str:
     """Convert molecule names to SMILES using Chemical Identifier Resolver (CIR).
-    
+
     Args:
         molecule_name: Common name, IUPAC name, or CAS number of molecule (e.g., 'aspirin', 'caffeine', '50-78-2')
         fallback_to_input: If lookup fails, return the input string assuming it might be SMILES
-    
+
     This tool enables natural language input for molecules by converting common names,
     IUPAC names, CAS numbers, and other identifiers to SMILES strings that can be
     used with Rowan workflows.
-    
+
     Supported Input Types:
     - Common names: 'aspirin', 'caffeine', 'benzene', 'glucose'
     - IUPAC names: '2-acetoxybenzoic acid', '1,3,7-trimethylpurine-2,6-dione'
     - CAS numbers: '50-78-2' (aspirin), '58-08-2' (caffeine)
     - InChI strings
     - Already valid SMILES (will be validated)
-    
+
     Returns:
         SMILES string if successful, error message if not found
-        
+
     Examples:
         # Common drug name
         result = molecule_lookup("aspirin")
         # Returns: "CC(=O)Oc1ccccc1C(=O)O"
-        
+
         # IUPAC name
         result = molecule_lookup("2-acetoxybenzoic acid")
         # Returns: "CC(=O)Oc1ccccc1C(=O)O"
-        
+
         # CAS number
         result = molecule_lookup("50-78-2")
         # Returns: "CC(=O)Oc1ccccc1C(=O)O"
-        
+
         # Complex molecule
         result = molecule_lookup("paracetamol")
         # Returns: "CC(=O)Nc1ccc(O)cc1"
@@ -55,30 +60,32 @@ def molecule_lookup(
     try:
         # Clean input
         molecule_name = molecule_name.strip()
-        
+
         # Check if already SMILES-like (contains typical SMILES characters)
-        smiles_chars = {'=', '#', '(', ')', '[', ']', '@', '+', '-'}
+        smiles_chars = {"=", "#", "(", ")", "[", "]", "@", "+", "-"}
         if any(char in molecule_name for char in smiles_chars):
-            logger.info(f"Input '{molecule_name}' appears to be SMILES, returning as-is")
+            logger.info(
+                f"Input '{molecule_name}' appears to be SMILES, returning as-is"
+            )
             return molecule_name
-        
+
         # Query CIR service
         logger.info(f"Looking up molecule: {molecule_name}")
-        url = f'http://cactus.nci.nih.gov/chemical/structure/{quote(molecule_name)}/smiles'
-        
+        url = f"http://cactus.nci.nih.gov/chemical/structure/{quote(molecule_name)}/smiles"
+
         response = urlopen(url, timeout=10)
-        smiles = response.read().decode('utf8').strip()
-        
+        smiles = response.read().decode("utf8").strip()
+
         # CIR may return multiple SMILES for some queries, take the first one
-        if '\n' in smiles:
-            smiles = smiles.split('\n')[0]
-        
+        if "\n" in smiles:
+            smiles = smiles.split("\n")[0]
+
         logger.info(f"Successfully converted '{molecule_name}' to SMILES: {smiles}")
         return smiles
-        
+
     except Exception as e:
         logger.warning(f"Failed to lookup '{molecule_name}': {e}")
-        
+
         if fallback_to_input:
             logger.info(f"Returning original input as fallback: {molecule_name}")
             return molecule_name
@@ -88,24 +95,26 @@ def molecule_lookup(
 
 def batch_molecule_lookup(
     molecule_names: Annotated[List[str], "List of molecule names to convert to SMILES"],
-    skip_failures: Annotated[bool, "Skip molecules that fail lookup instead of stopping"] = True
+    skip_failures: Annotated[
+        bool, "Skip molecules that fail lookup instead of stopping"
+    ] = True,
 ) -> Dict[str, str]:
     """Convert multiple molecule names to SMILES in batch.
-    
+
     Args:
         molecule_names: List of molecule names to convert to SMILES
         skip_failures: Skip molecules that fail lookup instead of stopping
-    
+
     Useful for preparing multiple molecules for workflows or screening.
-        
+
     Returns:
         Dictionary mapping input names to SMILES strings (or error messages)
-        
+
     Examples:
         # Drug screening set
         result = batch_molecule_lookup([
             "aspirin",
-            "ibuprofen", 
+            "ibuprofen",
             "paracetamol",
             "caffeine"
         ])
@@ -115,7 +124,7 @@ def batch_molecule_lookup(
         #     "paracetamol": "CC(=O)Nc1ccc(O)cc1",
         #     "caffeine": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"
         # }
-        
+
         # Mixed input types
         result = batch_molecule_lookup([
             "benzene",           # Common name
@@ -124,7 +133,7 @@ def batch_molecule_lookup(
         ])
     """
     results = {}
-    
+
     for name in molecule_names:
         try:
             smiles = molecule_lookup(name, fallback_to_input=False)
@@ -136,7 +145,7 @@ def batch_molecule_lookup(
                 results[name] = error_msg
             else:
                 raise ValueError(f"Failed to lookup '{name}': {error_msg}")
-    
+
     return results
 
 
@@ -144,15 +153,15 @@ def validate_smiles(
     smiles: Annotated[str, "SMILES string to validate"]
 ) -> Dict[str, any]:
     """Validate a SMILES string and return basic molecular properties.
-    
+
     Args:
         smiles: SMILES string to validate
-    
+
     Uses RDKit to validate SMILES and extract basic properties.
-        
+
     Returns:
         Dictionary with validation status and properties if valid
-        
+
     Examples:
         result = validate_smiles("CC(=O)O")
         # Returns: {
@@ -165,34 +174,25 @@ def validate_smiles(
     try:
         from rdkit import Chem
         from rdkit.Chem import Descriptors
-        
+
         mol = Chem.MolFromSmiles(smiles)
-        
+
         if mol is None:
-            return {
-                "valid": False,
-                "error": "Invalid SMILES string"
-            }
-        
+            return {"valid": False, "error": "Invalid SMILES string"}
+
         return {
             "valid": True,
             "canonical_smiles": Chem.MolToSmiles(mol),
             "molecular_formula": Chem.rdMolDescriptors.CalcMolFormula(mol),
             "molecular_weight": round(Descriptors.MolWt(mol), 2),
             "num_atoms": mol.GetNumAtoms(),
-            "num_bonds": mol.GetNumBonds()
+            "num_bonds": mol.GetNumBonds(),
         }
-        
+
     except ImportError:
-        return {
-            "valid": "unknown",
-            "error": "RDKit not available for validation"
-        }
+        return {"valid": "unknown", "error": "RDKit not available for validation"}
     except Exception as e:
-        return {
-            "valid": False,
-            "error": str(e)
-        }
+        return {"valid": False, "error": str(e)}
 
 
 # Common molecules reference (for documentation)
@@ -204,7 +204,6 @@ COMMON_MOLECULES = {
     "ibuprofen": "CC(C)Cc1ccc(C(C)C(=O)O)cc1",
     "caffeine": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",
     "penicillin": "CC1(C)SC2C(NC(=O)Cc3ccccc3)C(=O)N2C1C(=O)O",
-    
     # Solvents
     "water": "O",
     "ethanol": "CCO",
@@ -214,7 +213,6 @@ COMMON_MOLECULES = {
     "chloroform": "C(Cl)(Cl)Cl",
     "benzene": "c1ccccc1",
     "toluene": "Cc1ccccc1",
-    
     # Organic compounds
     "glucose": "C(C1C(C(C(C(O1)O)O)O)O)O",
     "acetic acid": "CC(=O)O",
@@ -222,7 +220,6 @@ COMMON_MOLECULES = {
     "phenol": "Oc1ccccc1",
     "aniline": "Nc1ccccc1",
     "naphthalene": "c1ccc2c(c1)cccc2",
-    
     # Amino acids
     "glycine": "C(C(=O)O)N",
     "alanine": "CC(C(=O)O)N",

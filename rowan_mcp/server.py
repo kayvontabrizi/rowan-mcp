@@ -8,36 +8,56 @@ from fastmcp import FastMCP
 
 
 # Import v2 API functions
-from .functions_v2.submit_basic_calculation_workflow import submit_basic_calculation_workflow
-from .functions_v2.submit_conformer_search_workflow import submit_conformer_search_workflow
+from .functions_v2.submit_basic_calculation_workflow import (
+    submit_basic_calculation_workflow,
+)
+from .functions_v2.submit_conformer_search_workflow import (
+    submit_conformer_search_workflow,
+)
 from .functions_v2.submit_solubility_workflow import submit_solubility_workflow
 from .functions_v2.submit_pka_workflow import submit_pka_workflow
-from .functions_v2.submit_redox_potential_workflow import submit_redox_potential_workflow
+from .functions_v2.submit_redox_potential_workflow import (
+    submit_redox_potential_workflow,
+)
 from .functions_v2.submit_fukui_workflow import submit_fukui_workflow
-from .functions_v2.submit_tautomer_search_workflow import submit_tautomer_search_workflow
+from .functions_v2.submit_tautomer_search_workflow import (
+    submit_tautomer_search_workflow,
+)
 from .functions_v2.submit_descriptors_workflow import submit_descriptors_workflow
 from .functions_v2.submit_scan_workflow import submit_scan_workflow
 from .functions_v2.submit_irc_workflow import submit_irc_workflow
-from .functions_v2.submit_protein_cofolding_workflow import submit_protein_cofolding_workflow
+from .functions_v2.submit_protein_cofolding_workflow import (
+    submit_protein_cofolding_workflow,
+)
 from .functions_v2.submit_docking_workflow import submit_docking_workflow
 from .functions_v2.submit_macropka_workflow import submit_macropka_workflow
 
 # Import new v2.1.9 workflow functions
 from .functions_v2.submit_strain_workflow import submit_strain_workflow
+
 # from .functions_v2.submit_nmr_workflow import submit_nmr_workflow  # Commented out - requires subscription upgrade
 from .functions_v2.submit_ion_mobility_workflow import submit_ion_mobility_workflow
-from .functions_v2.submit_double_ended_ts_search_workflow import submit_double_ended_ts_search_workflow
-from .functions_v2.submit_pose_analysis_md_workflow import submit_pose_analysis_md_workflow
+from .functions_v2.submit_double_ended_ts_search_workflow import (
+    submit_double_ended_ts_search_workflow,
+)
+from .functions_v2.submit_pose_analysis_md_workflow import (
+    submit_pose_analysis_md_workflow,
+)
 from .functions_v2.submit_batch_docking_workflow import submit_batch_docking_workflow
 from .functions_v2.submit_msa_workflow import submit_msa_workflow
 from .functions_v2.submit_batch_workflow import batch_submit_workflow
 
 # Import generic-access workflow functions
 from .functions_v2.submit_admet_workflow import submit_admet_workflow
+
 # from .functions_v2.submit_bde_workflow import submit_bde_workflow  # Commented out - tricky return structure
 from .functions_v2.submit_conformers_workflow import submit_conformers_workflow
+
 # from .functions_v2.submit_electronic_properties_workflow import submit_electronic_properties_workflow  # Commented out - returns ~100MB data, needs visualization
-from .functions_v2.submit_hydrogen_bond_basicity_workflow import submit_hydrogen_bond_basicity_workflow
+from .functions_v2.submit_hydrogen_bond_basicity_workflow import (
+    submit_hydrogen_bond_basicity_workflow,
+)
+
 # from .functions_v2.submit_molecular_dynamics_workflow import submit_molecular_dynamics_workflow  # Commented out - workflow in beta
 from .functions_v2.submit_multistage_opt_workflow import submit_multistage_opt_workflow
 from .functions_v2.submit_spin_states_workflow import submit_spin_states_workflow
@@ -46,7 +66,7 @@ from .functions_v2.submit_spin_states_workflow import submit_spin_states_workflo
 from .functions_v2.molecule_lookup import (
     molecule_lookup,
     batch_molecule_lookup,
-    validate_smiles
+    validate_smiles,
 )
 
 # Import workflow management functions
@@ -58,7 +78,7 @@ from .functions_v2.workflow_management_v2 import (
     retrieve_calculation_molecules,
     list_workflows,
     workflow_update,
-    workflow_delete_data
+    workflow_delete_data,
 )
 
 # Import protein management functions
@@ -68,11 +88,12 @@ from .functions_v2.protein_management import (
     list_proteins,
     upload_protein,
     delete_protein,
-    sanitize_protein
+    sanitize_protein,
 )
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
@@ -150,7 +171,9 @@ def main() -> None:
     """Main entry point for the MCP server."""
     if len(sys.argv) > 1 and sys.argv[1] == "--help":
         print("Rowan MCP Server", file=sys.stderr)
-        print("Usage: rowan-mcp [--transport=stdio|http] [--port=6276]", file=sys.stderr)
+        print(
+            "Usage: rowan-mcp [--transport=stdio|http] [--port=6276]", file=sys.stderr
+        )
         print("Environment variables:", file=sys.stderr)
         print("  ROWAN_API_KEY    # Required: Your Rowan API key", file=sys.stderr)
         return
@@ -172,11 +195,15 @@ def main() -> None:
         port = int(os.getenv("MCP_PORT"))
 
     if transport == "http":
-        print(f"Starting Rowan MCP Server with HTTP transport on port {port}", file=sys.stderr)
+        print(
+            f"Starting Rowan MCP Server with HTTP transport on port {port}",
+            file=sys.stderr,
+        )
         mcp.run(transport="http", host="localhost", port=port)
     else:
         print("Starting Rowan MCP Server with STDIO transport", file=sys.stderr)
         mcp.run(transport="stdio")
+
 
 if __name__ == "__main__":
     main()

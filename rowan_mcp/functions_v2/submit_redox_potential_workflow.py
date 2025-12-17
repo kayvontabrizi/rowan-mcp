@@ -10,14 +10,25 @@ import stjames
 
 def submit_redox_potential_workflow(
     initial_molecule: Annotated[str, "SMILES string for redox potential calculation"],
-    reduction: Annotated[bool, "Whether to calculate reduction potential (gaining electron)"] = False,
-    oxidization: Annotated[bool, "Whether to calculate oxidation potential (losing electron)"] = True,
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Redox Potential Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0
+    reduction: Annotated[
+        bool, "Whether to calculate reduction potential (gaining electron)"
+    ] = False,
+    oxidization: Annotated[
+        bool, "Whether to calculate oxidation potential (losing electron)"
+    ] = True,
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Redox Potential Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a redox potential calculation workflow using Rowan v2 API.
-    
+
     Args:
         initial_molecule: SMILES string for redox potential calculation
         reduction: Whether to calculate reduction potential (gaining electron)
@@ -25,13 +36,13 @@ def submit_redox_potential_workflow(
         name: Workflow name for identification and tracking
         folder_uuid: UUID of folder to organize this workflow. Empty string uses default folder.
         max_credits: Maximum credits to spend on this calculation. 0 for no limit.
-    
+
     Calculates reduction and/or oxidation potentials for a molecule using
     quantum chemistry methods.
-    
+
     Returns:
         Workflow object representing the submitted workflow
-        
+
     Example:
         # Benzoic acid redox potential
         result = submit_redox_potential_workflow(
@@ -42,7 +53,7 @@ def submit_redox_potential_workflow(
         )
 
     """
-    
+
     result = rowan.submit_redox_potential_workflow(
         initial_molecule=stjames.Molecule.from_smiles(initial_molecule),
         reduction=reduction,
@@ -50,7 +61,7 @@ def submit_redox_potential_workflow(
         mode="rapid",
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

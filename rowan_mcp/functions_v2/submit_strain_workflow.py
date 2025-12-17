@@ -9,10 +9,19 @@ import stjames
 
 
 def submit_strain_workflow(
-    initial_molecule: Annotated[str, "SMILES string of the molecule to calculate strain energy for"],
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Strain Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0
+    initial_molecule: Annotated[
+        str, "SMILES string of the molecule to calculate strain energy for"
+    ],
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Strain Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a strain energy calculation workflow using Rowan v2 API.
 
@@ -44,7 +53,7 @@ def submit_strain_workflow(
         initial_molecule=stjames.Molecule.from_smiles(initial_molecule),
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

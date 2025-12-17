@@ -8,10 +8,19 @@ import rowan
 
 
 def submit_admet_workflow(
-    initial_molecule: Annotated[str, "SMILES string of the molecule for ADMET property prediction"],
-    name: Annotated[str, "Workflow name for identification and tracking"] = "ADMET Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0,
+    initial_molecule: Annotated[
+        str, "SMILES string of the molecule for ADMET property prediction"
+    ],
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "ADMET Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit an ADMET workflow to predict drug-like properties using ADMET-AI.
 
@@ -44,6 +53,7 @@ def submit_admet_workflow(
 
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     # Strip whitespace from SMILES
@@ -58,7 +68,7 @@ def submit_admet_workflow(
         workflow_data={},  # Required to be empty dict, not None
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

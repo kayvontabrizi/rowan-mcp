@@ -33,4 +33,9 @@ for workflow in workflows:
     workflow.wait_for_result()
     workflow.fetch_latest(in_place=True)
 
-print([(workflow.name, workflow.data["conjugate_bases"][0]["pka"]) for workflow in workflows])
+print(
+    [
+        (workflow.name, workflow.data["conjugate_bases"][0]["pka"])
+        for workflow in workflows
+    ]
+)

@@ -10,17 +10,45 @@ import json
 
 
 def submit_protein_cofolding_workflow(
-    initial_protein_sequences: Annotated[str, "JSON string list of protein sequences for cofolding (e.g., '[\"MKLLV...\", \"MAHQR...\"]')"],
-    initial_smiles_list: Annotated[str, "JSON string list of SMILES for ligands to include in cofolding (e.g., '[\"CCO\", \"CC(=O)O\"]'). Empty for protein-only"] = None,
-    ligand_binding_affinity_index: Annotated[str, "Index of ligand for binding affinity computation (e.g., '0'). Empty for no affinity calculation"] = None,
-    use_msa_server: Annotated[bool, "Whether to use multiple sequence alignment server for better structure prediction"] = True,
-    use_potentials: Annotated[bool, "Whether to include additional potentials in the calculation"] = False,
-    compute_strain: Annotated[bool, "Whether to compute the strain of the pose (if pose_refinement is enabled)"] = False,
-    do_pose_refinement: Annotated[bool, "Whether to optimize non-rotatable bonds in output poses"] = False,
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Cofolding Workflow",
-    model: Annotated[str, "Structure prediction model to use (e.g., 'boltz_2', 'alphafold3')"] = stjames.CofoldingModel.BOLTZ_2.value,
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0
+    initial_protein_sequences: Annotated[
+        str,
+        'JSON string list of protein sequences for cofolding (e.g., \'["MKLLV...", "MAHQR..."]\')',
+    ],
+    initial_smiles_list: Annotated[
+        str,
+        'JSON string list of SMILES for ligands to include in cofolding (e.g., \'["CCO", "CC(=O)O"]\'). Empty for protein-only',
+    ] = None,
+    ligand_binding_affinity_index: Annotated[
+        str,
+        "Index of ligand for binding affinity computation (e.g., '0'). Empty for no affinity calculation",
+    ] = None,
+    use_msa_server: Annotated[
+        bool,
+        "Whether to use multiple sequence alignment server for better structure prediction",
+    ] = True,
+    use_potentials: Annotated[
+        bool, "Whether to include additional potentials in the calculation"
+    ] = False,
+    compute_strain: Annotated[
+        bool,
+        "Whether to compute the strain of the pose (if pose_refinement is enabled)",
+    ] = False,
+    do_pose_refinement: Annotated[
+        bool, "Whether to optimize non-rotatable bonds in output poses"
+    ] = False,
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Cofolding Workflow",
+    model: Annotated[
+        str, "Structure prediction model to use (e.g., 'boltz_2', 'alphafold3')"
+    ] = stjames.CofoldingModel.BOLTZ_2.value,
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submits a protein cofolding workflow to the API.
 
@@ -57,11 +85,13 @@ def submit_protein_cofolding_workflow(
         initial_protein_sequences = json.loads(initial_protein_sequences)
     except (json.JSONDecodeError, ValueError):
         # Try to parse as comma-separated
-        if ',' in initial_protein_sequences:
-            initial_protein_sequences = [s.strip() for s in initial_protein_sequences.split(',') if s.strip()]
+        if "," in initial_protein_sequences:
+            initial_protein_sequences = [
+                s.strip() for s in initial_protein_sequences.split(",") if s.strip()
+            ]
         else:
             initial_protein_sequences = [initial_protein_sequences.strip()]
-    
+
     # Parse initial_smiles_list if provided
     parsed_initial_smiles_list = None
     if initial_smiles_list:
@@ -69,19 +99,23 @@ def submit_protein_cofolding_workflow(
             parsed_initial_smiles_list = json.loads(initial_smiles_list)
         except (json.JSONDecodeError, ValueError):
             # Try to parse as comma-separated
-            if ',' in initial_smiles_list:
-                parsed_initial_smiles_list = [s.strip() for s in initial_smiles_list.split(',') if s.strip()]
+            if "," in initial_smiles_list:
+                parsed_initial_smiles_list = [
+                    s.strip() for s in initial_smiles_list.split(",") if s.strip()
+                ]
             else:
                 parsed_initial_smiles_list = [initial_smiles_list.strip()]
-    
+
     # Parse ligand_binding_affinity_index if provided
     parsed_ligand_index = None
     if ligand_binding_affinity_index:
         try:
             parsed_ligand_index = int(ligand_binding_affinity_index)
         except (ValueError, TypeError):
-            raise ValueError(f"Invalid ligand_binding_affinity_index: '{ligand_binding_affinity_index}' must be an integer")
-    
+            raise ValueError(
+                f"Invalid ligand_binding_affinity_index: '{ligand_binding_affinity_index}' must be an integer"
+            )
+
     result = rowan.submit_protein_cofolding_workflow(
         initial_protein_sequences=initial_protein_sequences,
         initial_smiles_list=parsed_initial_smiles_list,
@@ -93,7 +127,7 @@ def submit_protein_cofolding_workflow(
         name=name,
         model=model,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

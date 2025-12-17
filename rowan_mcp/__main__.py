@@ -9,4 +9,5 @@ Usage:
 if __name__ == "__main__":
     # STDIO transport
     from .server import main
-    main() 
+
+    main()

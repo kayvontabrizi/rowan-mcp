@@ -9,14 +9,32 @@ import stjames
 
 
 def submit_multistage_opt_workflow(
-    initial_molecule: Annotated[str, "SMILES string of the molecule for multi-stage optimization"],
-    xtb_preopt: Annotated[bool, "Whether to pre-optimize with xTB before main optimization stages"] = False,
-    transition_state: Annotated[bool, "Whether this is a transition state optimization"] = False,
-    frequencies: Annotated[bool, "Whether to calculate vibrational frequencies after optimization"] = False,
-    solvent: Annotated[str, "Solvent environment for calculations (name or SMILES). Empty string for gas phase"] = "",
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Multi-Stage Optimization Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0,
+    initial_molecule: Annotated[
+        str, "SMILES string of the molecule for multi-stage optimization"
+    ],
+    xtb_preopt: Annotated[
+        bool, "Whether to pre-optimize with xTB before main optimization stages"
+    ] = False,
+    transition_state: Annotated[
+        bool, "Whether this is a transition state optimization"
+    ] = False,
+    frequencies: Annotated[
+        bool, "Whether to calculate vibrational frequencies after optimization"
+    ] = False,
+    solvent: Annotated[
+        str,
+        "Solvent environment for calculations (name or SMILES). Empty string for gas phase",
+    ] = "",
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Multi-Stage Optimization Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a multi-stage optimization workflow for sequential geometry refinement.
 
@@ -79,6 +97,7 @@ def submit_multistage_opt_workflow(
 
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     # Build workflow_data
@@ -86,7 +105,7 @@ def submit_multistage_opt_workflow(
         "mode": "rapid",
         "xtb_preopt": xtb_preopt,
         "transition_state": transition_state,
-        "frequencies": frequencies
+        "frequencies": frequencies,
     }
 
     # Handle solvent
@@ -101,12 +120,14 @@ def submit_multistage_opt_workflow(
         workflow_data=workflow_data,
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable
     workflow.update(public=True)
 
-    logger.info(f"Multi-stage optimization workflow submitted with UUID: {workflow.uuid}")
+    logger.info(
+        f"Multi-stage optimization workflow submitted with UUID: {workflow.uuid}"
+    )
 
     return workflow

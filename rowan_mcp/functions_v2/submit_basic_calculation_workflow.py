@@ -11,16 +11,30 @@ import json
 
 
 def submit_basic_calculation_workflow(
-    initial_molecule: Annotated[str, "SMILES string or molecule JSON for quantum chemistry calculation"],
-    method: Annotated[str, "Computational method (e.g., 'gfn2-xtb', 'uma_m_omol', 'b3lyp-d3bj')"] = "uma_m_omol",
-    tasks: Annotated[str, "JSON array or comma-separated list of tasks (e.g., '[\"optimize\"]', 'optimize, frequencies')"] = "",
+    initial_molecule: Annotated[
+        str, "SMILES string or molecule JSON for quantum chemistry calculation"
+    ],
+    method: Annotated[
+        str, "Computational method (e.g., 'gfn2-xtb', 'uma_m_omol', 'b3lyp-d3bj')"
+    ] = "uma_m_omol",
+    tasks: Annotated[
+        str,
+        "JSON array or comma-separated list of tasks (e.g., '[\"optimize\"]', 'optimize, frequencies')",
+    ] = "",
     engine: Annotated[str, "Computational engine: 'omol25', 'xtb', 'psi4'"] = "omol25",
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Basic Calculation Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Basic Calculation Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a basic calculation workflow using Rowan v2 API.
-    
+
     Performs fundamental quantum chemistry calculations with configurable methods
     and computational tasks. Returns a workflow object for tracking progress.
 
@@ -53,41 +67,48 @@ def submit_basic_calculation_workflow(
         )
 
     """
-    
+
     # Parse tasks parameter - handle string input
     parsed_tasks = None
     if tasks:  # If not empty string
         tasks = tasks.strip()
-        if tasks.startswith('[') and tasks.endswith(']'):
+        if tasks.startswith("[") and tasks.endswith("]"):
             # JSON array format like '["optimize"]'
             try:
                 parsed_tasks = json.loads(tasks)
             except (json.JSONDecodeError, ValueError):
                 # Failed to parse as JSON, try as comma-separated
-                tasks = tasks.strip('[]').replace('"', '').replace("'", "")
-                parsed_tasks = [t.strip() for t in tasks.split(',') if t.strip()]
-        elif ',' in tasks:
-            # Comma-separated format like 'optimize, frequencies'  
-            parsed_tasks = [t.strip() for t in tasks.split(',') if t.strip()]
+                tasks = tasks.strip("[]").replace('"', "").replace("'", "")
+                parsed_tasks = [t.strip() for t in tasks.split(",") if t.strip()]
+        elif "," in tasks:
+            # Comma-separated format like 'optimize, frequencies'
+            parsed_tasks = [t.strip() for t in tasks.split(",") if t.strip()]
         else:
             # Single task as string like 'optimize'
             parsed_tasks = [tasks]
-    
-    
+
     try:
         # Handle initial_molecule parameter - could be JSON string, SMILES, or dict
         if isinstance(initial_molecule, str):
             # Check if it's a JSON string (starts with { or [)
             initial_molecule_str = initial_molecule.strip()
-            if (initial_molecule_str.startswith('{') and initial_molecule_str.endswith('}')) or \
-               (initial_molecule_str.startswith('[') and initial_molecule_str.endswith(']')):
+            if (
+                initial_molecule_str.startswith("{")
+                and initial_molecule_str.endswith("}")
+            ) or (
+                initial_molecule_str.startswith("[")
+                and initial_molecule_str.endswith("]")
+            ):
                 try:
                     # Parse the JSON string to dict
                     initial_molecule = json.loads(initial_molecule_str)
-                    
+
                     # Now handle as dict (fall through to dict handling below)
-                    if isinstance(initial_molecule, dict) and 'smiles' in initial_molecule:
-                        smiles = initial_molecule.get('smiles')
+                    if (
+                        isinstance(initial_molecule, dict)
+                        and "smiles" in initial_molecule
+                    ):
+                        smiles = initial_molecule.get("smiles")
                         if smiles:
                             try:
                                 initial_molecule = stjames.Molecule.from_smiles(smiles)
@@ -96,7 +117,9 @@ def submit_basic_calculation_workflow(
                 except (json.JSONDecodeError, ValueError) as e:
                     # Not valid JSON, treat as SMILES string
                     try:
-                        initial_molecule = stjames.Molecule.from_smiles(initial_molecule)
+                        initial_molecule = stjames.Molecule.from_smiles(
+                            initial_molecule
+                        )
                     except Exception as e:
                         pass
             else:
@@ -105,17 +128,17 @@ def submit_basic_calculation_workflow(
                     initial_molecule = stjames.Molecule.from_smiles(initial_molecule)
                 except Exception as e:
                     pass
-        elif isinstance(initial_molecule, dict) and 'smiles' in initial_molecule:
+        elif isinstance(initial_molecule, dict) and "smiles" in initial_molecule:
             # If we have a dict with SMILES, extract and use just the SMILES
-            smiles = initial_molecule.get('smiles')
+            smiles = initial_molecule.get("smiles")
             if smiles:
                 try:
                     initial_molecule = stjames.Molecule.from_smiles(smiles)
                 except Exception as e:
                     initial_molecule = smiles
-        
+
         # Convert to appropriate format
-        if hasattr(initial_molecule, 'model_dump'):
+        if hasattr(initial_molecule, "model_dump"):
             initial_molecule_dict = initial_molecule.model_dump()
         elif isinstance(initial_molecule, dict):
             initial_molecule_dict = initial_molecule
@@ -127,22 +150,22 @@ def submit_basic_calculation_workflow(
             except:
                 # If that fails, pass as-is
                 initial_molecule_dict = initial_molecule
-        
+
         # Convert method string to Method object to get the correct name
         if isinstance(method, str):
             # Handle common method name variations
             method_map = {
-                'gfn2_xtb': 'gfn2-xtb',
-                'gfn1_xtb': 'gfn1-xtb',
-                'gfn0_xtb': 'gfn0-xtb',
-                'r2scan_3c': 'r2scan-3c',
-                'wb97x_d3': 'wb97x-d3',
-                'wb97m_d3bj': 'wb97m-d3bj',
-                'b3lyp_d3bj': 'b3lyp-d3bj',
-                'uma_m_omol': 'uma_m_omol',  # This one stays the same
+                "gfn2_xtb": "gfn2-xtb",
+                "gfn1_xtb": "gfn1-xtb",
+                "gfn0_xtb": "gfn0-xtb",
+                "r2scan_3c": "r2scan-3c",
+                "wb97x_d3": "wb97x-d3",
+                "wb97m_d3bj": "wb97m-d3bj",
+                "b3lyp_d3bj": "b3lyp-d3bj",
+                "uma_m_omol": "uma_m_omol",  # This one stays the same
             }
             method = method_map.get(method, method)
-            
+
             try:
                 method_obj = stjames.Method(method)
                 method_name = method_obj.name
@@ -151,10 +174,10 @@ def submit_basic_calculation_workflow(
                 method_name = method
         else:
             method_name = method
-        
+
         # Use parsed tasks or default
         final_tasks = parsed_tasks if parsed_tasks else ["optimize"]
-        
+
         # Build workflow_data following the official API structure
         workflow_data = {
             "settings": {
@@ -164,7 +187,7 @@ def submit_basic_calculation_workflow(
             },
             "engine": engine,
         }
-        
+
         # Build the API request
         data = {
             "name": name,
@@ -188,7 +211,7 @@ def submit_basic_calculation_workflow(
         result.update(public=True)
 
         return result
-        
+
     except Exception as e:
         # Re-raise the exception so MCP can handle it
         raise

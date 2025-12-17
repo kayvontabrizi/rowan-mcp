@@ -9,14 +9,30 @@ import json
 
 
 def submit_pose_analysis_md_workflow(
-    protein: Annotated[str, "Protein UUID (36-char string) of existing protein. Use create_protein_from_pdb_id first if needed"],
+    protein: Annotated[
+        str,
+        "Protein UUID (36-char string) of existing protein. Use create_protein_from_pdb_id first if needed",
+    ],
     initial_smiles: Annotated[str, "SMILES string of the ligand molecule"],
-    num_trajectories: Annotated[int, "Number of independent MD trajectories to run"] = 1,
-    simulation_time_ns: Annotated[int, "Simulation time in nanoseconds for each trajectory"] = 10,
-    ligand_residue_name: Annotated[str, "Residue name for the ligand in the protein structure"] = "LIG",
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Pose-Analysis MD Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0
+    num_trajectories: Annotated[
+        int, "Number of independent MD trajectories to run"
+    ] = 1,
+    simulation_time_ns: Annotated[
+        int, "Simulation time in nanoseconds for each trajectory"
+    ] = 10,
+    ligand_residue_name: Annotated[
+        str, "Residue name for the ligand in the protein structure"
+    ] = "LIG",
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Pose-Analysis MD Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a pose analysis molecular dynamics workflow using Rowan v2 API.
 
@@ -73,6 +89,7 @@ def submit_pose_analysis_md_workflow(
     This workflow can take 1-3 hours depending on simulation length.
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     # Handle protein parameter - could be UUID or dict with PDB ID
@@ -89,12 +106,14 @@ def submit_pose_analysis_md_workflow(
 
     # Check if protein is a UUID (36 chars with dashes)
     if isinstance(protein, str):
-        if len(protein) == 36 and '-' in protein:
+        if len(protein) == 36 and "-" in protein:
             # It's a UUID, retrieve the protein
             logger.info(f"Using existing protein UUID: {protein}")
             protein_obj = rowan.retrieve_protein(protein)
         else:
-            raise ValueError(f"Invalid protein parameter: {protein}. Expected protein UUID (36 chars)")
+            raise ValueError(
+                f"Invalid protein parameter: {protein}. Expected protein UUID (36 chars)"
+            )
     else:
         # Assume it's already a protein object
         protein_obj = protein
@@ -107,7 +126,7 @@ def submit_pose_analysis_md_workflow(
         ligand_residue_name=ligand_residue_name,
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

@@ -19,18 +19,37 @@ from .submit_fukui_workflow import submit_fukui_workflow
 from .submit_ion_mobility_workflow import submit_ion_mobility_workflow
 from .submit_admet_workflow import submit_admet_workflow
 from .submit_bde_workflow import submit_bde_workflow
-from .submit_hydrogen_bond_basicity_workflow import submit_hydrogen_bond_basicity_workflow
+from .submit_hydrogen_bond_basicity_workflow import (
+    submit_hydrogen_bond_basicity_workflow,
+)
 from .submit_spin_states_workflow import submit_spin_states_workflow
 from .submit_multistage_opt_workflow import submit_multistage_opt_workflow
 
 
 def batch_submit_workflow(
-    workflow_type: Annotated[str, "Type of workflow to run in batch (e.g., pka, descriptors, solubility, conformer_search)"],
-    initial_molecules: Annotated[str, "JSON array of SMILES strings. Format: [\"CCO\", \"CCCO\", \"CCCCO\"] (no backslashes or outer quotes)"],
-    workflow_data: Annotated[str, "JSON object of workflow-specific parameters. Format: {\"key\": \"value\"} or empty for defaults"] = "",
-    names: Annotated[str, "Comma-separated workflow names OR JSON array. Format: Phenol pKa, Acetic Acid pKa OR [\"Name 1\", \"Name 2\"]. Auto-generated if empty"] = "",
-    folder_uuid: Annotated[str, "UUID of folder to organize these workflows. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend per workflow. 0 for no limit"] = 0
+    workflow_type: Annotated[
+        str,
+        "Type of workflow to run in batch (e.g., pka, descriptors, solubility, conformer_search)",
+    ],
+    initial_molecules: Annotated[
+        str,
+        'JSON array of SMILES strings. Format: ["CCO", "CCCO", "CCCCO"] (no backslashes or outer quotes)',
+    ],
+    workflow_data: Annotated[
+        str,
+        'JSON object of workflow-specific parameters. Format: {"key": "value"} or empty for defaults',
+    ] = "",
+    names: Annotated[
+        str,
+        'Comma-separated workflow names OR JSON array. Format: Phenol pKa, Acetic Acid pKa OR ["Name 1", "Name 2"]. Auto-generated if empty',
+    ] = "",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize these workflows. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend per workflow. 0 for no limit"
+    ] = 0,
 ):
     """Submit multiple workflows of the same type for different molecules using Rowan v2 API.
 
@@ -91,8 +110,10 @@ def batch_submit_workflow(
         parsed_molecules = json.loads(initial_molecules)
     except (json.JSONDecodeError, ValueError):
         # Try comma-separated
-        if ',' in initial_molecules:
-            parsed_molecules = [s.strip() for s in initial_molecules.split(',') if s.strip()]
+        if "," in initial_molecules:
+            parsed_molecules = [
+                s.strip() for s in initial_molecules.split(",") if s.strip()
+            ]
         else:
             parsed_molecules = [initial_molecules.strip()]
 
@@ -114,44 +135,49 @@ def batch_submit_workflow(
             parsed_names = json.loads(names)
         except (json.JSONDecodeError, ValueError):
             # Try comma-separated
-            if ',' in names:
-                parsed_names = [n.strip() for n in names.split(',') if n.strip()]
+            if "," in names:
+                parsed_names = [n.strip() for n in names.split(",") if n.strip()]
             else:
                 parsed_names = [names.strip()]
 
     # Auto-generate names if not provided
     if not parsed_names:
-        parsed_names = [f"{workflow_type.replace('_', ' ').title()} {i+1}" for i in range(len(parsed_molecules))]
+        parsed_names = [
+            f"{workflow_type.replace('_', ' ').title()} {i+1}"
+            for i in range(len(parsed_molecules))
+        ]
 
     # Ensure we have the right number of names
     if len(parsed_names) != len(parsed_molecules):
         # Pad with auto-generated names or truncate
         if len(parsed_names) < len(parsed_molecules):
-            parsed_names.extend([
-                f"{workflow_type.replace('_', ' ').title()} {i+1}"
-                for i in range(len(parsed_names), len(parsed_molecules))
-            ])
+            parsed_names.extend(
+                [
+                    f"{workflow_type.replace('_', ' ').title()} {i+1}"
+                    for i in range(len(parsed_names), len(parsed_molecules))
+                ]
+            )
         else:
-            parsed_names = parsed_names[:len(parsed_molecules)]
+            parsed_names = parsed_names[: len(parsed_molecules)]
 
     # Get the workflow submission function dynamically
     workflow_func_map = {
-        'pka': submit_pka_workflow,
-        'solubility': submit_solubility_workflow,
-        'descriptors': submit_descriptors_workflow,
-        'redox_potential': submit_redox_potential_workflow,
-        'conformer_search': submit_conformer_search_workflow,
-        'conformers': submit_conformers_workflow,
-        'tautomers': submit_tautomer_search_workflow,
-        'tautomer_search': submit_tautomer_search_workflow,
-        'strain': submit_strain_workflow,
-        'fukui': submit_fukui_workflow,
-        'ion_mobility': submit_ion_mobility_workflow,
-        'admet': submit_admet_workflow,
-        'bde': submit_bde_workflow,
-        'hydrogen_bond_basicity': submit_hydrogen_bond_basicity_workflow,
-        'spin_states': submit_spin_states_workflow,
-        'multistage_opt': submit_multistage_opt_workflow,
+        "pka": submit_pka_workflow,
+        "solubility": submit_solubility_workflow,
+        "descriptors": submit_descriptors_workflow,
+        "redox_potential": submit_redox_potential_workflow,
+        "conformer_search": submit_conformer_search_workflow,
+        "conformers": submit_conformers_workflow,
+        "tautomers": submit_tautomer_search_workflow,
+        "tautomer_search": submit_tautomer_search_workflow,
+        "strain": submit_strain_workflow,
+        "fukui": submit_fukui_workflow,
+        "ion_mobility": submit_ion_mobility_workflow,
+        "admet": submit_admet_workflow,
+        "bde": submit_bde_workflow,
+        "hydrogen_bond_basicity": submit_hydrogen_bond_basicity_workflow,
+        "spin_states": submit_spin_states_workflow,
+        "multistage_opt": submit_multistage_opt_workflow,
     }
 
     if workflow_type not in workflow_func_map:
@@ -167,10 +193,10 @@ def batch_submit_workflow(
     for i, smiles in enumerate(parsed_molecules):
         # Prepare workflow arguments with SMILES string (not Molecule object)
         workflow_args = {
-            'initial_molecule': smiles,  # Pass SMILES string to wrapper function
-            'name': parsed_names[i],
-            'folder_uuid': folder_uuid,
-            'max_credits': max_credits,
+            "initial_molecule": smiles,  # Pass SMILES string to wrapper function
+            "name": parsed_names[i],
+            "folder_uuid": folder_uuid,
+            "max_credits": max_credits,
         }
 
         # Add workflow-specific data from workflow_data

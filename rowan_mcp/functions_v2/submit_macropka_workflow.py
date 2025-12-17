@@ -7,17 +7,32 @@ are evenly split between two charge states, considering overall protonation equi
 from typing import Annotated
 import rowan
 
+
 def submit_macropka_workflow(
-    initial_smiles: Annotated[str, "SMILES string of the molecule for macropKa calculation"],
+    initial_smiles: Annotated[
+        str, "SMILES string of the molecule for macropKa calculation"
+    ],
     min_pH: Annotated[int, "Minimum pH value for the calculation range"] = 0,
     max_pH: Annotated[int, "Maximum pH value for the calculation range"] = 14,
     min_charge: Annotated[int, "Minimum molecular charge to consider"] = -2,
     max_charge: Annotated[int, "Maximum molecular charge to consider"] = 2,
-    compute_solvation_energy: Annotated[bool, "Whether to compute solvation energy corrections"] = False,
-    compute_aqueous_solubility: Annotated[bool, "Compute quantitative pH-dependent solubility. False (default, 5min): pKa+ionization only, sufficient for 'which pH' questions. True (40min): adds conformer search+solvation energies for absolute mg/mL values"] = False,
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Macropka Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0
+    compute_solvation_energy: Annotated[
+        bool, "Whether to compute solvation energy corrections"
+    ] = False,
+    compute_aqueous_solubility: Annotated[
+        bool,
+        "Compute quantitative pH-dependent solubility. False (default, 5min): pKa+ionization only, sufficient for 'which pH' questions. True (40min): adds conformer search+solvation energies for absolute mg/mL values",
+    ] = False,
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Macropka Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a Macroscopic pKa workflow using Rowan v2 API.
 
@@ -53,7 +68,7 @@ def submit_macropka_workflow(
         # Slow: "What is solubility at pH 7 in mg/mL?"
         submit_macropka_workflow(initial_smiles=smiles, compute_aqueous_solubility=True)
     """
-    
+
     try:
         # Submit to API using rowan module
         result = rowan.submit_macropka_workflow(
@@ -66,7 +81,7 @@ def submit_macropka_workflow(
             compute_aqueous_solubility=compute_aqueous_solubility,
             name=name,
             folder_uuid=folder_uuid if folder_uuid else None,
-            max_credits=max_credits if max_credits > 0 else None
+            max_credits=max_credits if max_credits > 0 else None,
         )
 
         # Make workflow publicly viewable

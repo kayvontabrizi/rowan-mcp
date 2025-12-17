@@ -10,15 +10,34 @@ import json
 
 
 def submit_bde_workflow(
-    initial_molecule: Annotated[str, "SMILES string of the molecule for BDE calculations"],
-    optimize_fragments: Annotated[bool, "Whether to optimize the resulting fragments after bond cleavage"] = True,
-    atoms: Annotated[str, "JSON string list of atom indices to calculate BDEs for. Empty string for automatic selection"] = "",
-    fragment_indices: Annotated[str, "JSON string list of lists specifying fragment atom groups. Empty string for automatic"] = "",
+    initial_molecule: Annotated[
+        str, "SMILES string of the molecule for BDE calculations"
+    ],
+    optimize_fragments: Annotated[
+        bool, "Whether to optimize the resulting fragments after bond cleavage"
+    ] = True,
+    atoms: Annotated[
+        str,
+        "JSON string list of atom indices to calculate BDEs for. Empty string for automatic selection",
+    ] = "",
+    fragment_indices: Annotated[
+        str,
+        "JSON string list of lists specifying fragment atom groups. Empty string for automatic",
+    ] = "",
     all_CH: Annotated[bool, "Calculate BDEs for all C-H bonds in the molecule"] = False,
-    all_CX: Annotated[bool, "Calculate BDEs for all C-X bonds where X is any heavy atom"] = False,
-    name: Annotated[str, "Workflow name for identification and tracking"] = "BDE Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0,
+    all_CX: Annotated[
+        bool, "Calculate BDEs for all C-X bonds where X is any heavy atom"
+    ] = False,
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "BDE Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a bond dissociation energy (BDE) workflow.
 
@@ -49,6 +68,7 @@ def submit_bde_workflow(
 
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     # Build workflow_data
@@ -56,7 +76,7 @@ def submit_bde_workflow(
         "mode": "rapid",
         "optimize_fragments": optimize_fragments,
         "all_CH": all_CH,
-        "all_CX": all_CX
+        "all_CX": all_CX,
     }
 
     # Parse atoms if provided
@@ -73,7 +93,9 @@ def submit_bde_workflow(
             parsed_fragments = json.loads(fragment_indices)
             workflow_data["fragment_indices"] = parsed_fragments
         except json.JSONDecodeError:
-            logger.warning(f"Invalid fragment_indices JSON: {fragment_indices}. Skipping fragment_indices parameter.")
+            logger.warning(
+                f"Invalid fragment_indices JSON: {fragment_indices}. Skipping fragment_indices parameter."
+            )
 
     # Submit the workflow
     logger.info(f"Submitting BDE workflow: {name}")
@@ -83,7 +105,7 @@ def submit_bde_workflow(
         workflow_data=workflow_data,
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

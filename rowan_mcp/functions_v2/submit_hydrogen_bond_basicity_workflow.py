@@ -9,12 +9,25 @@ import stjames
 
 
 def submit_hydrogen_bond_basicity_workflow(
-    initial_molecule: Annotated[str, "SMILES string of the molecule for hydrogen bond basicity prediction"],
-    do_csearch: Annotated[bool, "Whether to perform conformer search before calculation"] = False,
-    do_optimization: Annotated[bool, "Whether to optimize the molecular geometry before calculation"] = False,
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Hydrogen Bond Basicity Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0,
+    initial_molecule: Annotated[
+        str, "SMILES string of the molecule for hydrogen bond basicity prediction"
+    ],
+    do_csearch: Annotated[
+        bool, "Whether to perform conformer search before calculation"
+    ] = False,
+    do_optimization: Annotated[
+        bool, "Whether to optimize the molecular geometry before calculation"
+    ] = False,
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Hydrogen Bond Basicity Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a hydrogen bond basicity workflow to predict pKBHX values.
 
@@ -56,13 +69,11 @@ def submit_hydrogen_bond_basicity_workflow(
 
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     # Build workflow_data
-    workflow_data = {
-        "do_csearch": do_csearch,
-        "do_optimization": do_optimization
-    }
+    workflow_data = {"do_csearch": do_csearch, "do_optimization": do_optimization}
 
     # Submit the workflow
     logger.info(f"Submitting hydrogen bond basicity workflow: {name}")
@@ -72,7 +83,7 @@ def submit_hydrogen_bond_basicity_workflow(
         workflow_data=workflow_data,
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable

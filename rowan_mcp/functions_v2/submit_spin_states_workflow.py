@@ -10,12 +10,27 @@ import json
 
 
 def submit_spin_states_workflow(
-    initial_molecule: Annotated[str, "SMILES string of the molecule for spin state calculations"],
-    states: Annotated[str, "JSON array of [charge, multiplicity] pairs. Format: [[0,1], [0,3]] (no outer quotes)"],
-    solvent: Annotated[str, "Solvent environment for calculations (name or SMILES). Empty string for gas phase"] = "",
-    name: Annotated[str, "Workflow name for identification and tracking"] = "Spin States Workflow",
-    folder_uuid: Annotated[str, "UUID of folder to organize this workflow. Empty string uses default folder"] = "",
-    max_credits: Annotated[int, "Maximum credits to spend on this calculation. 0 for no limit"] = 0,
+    initial_molecule: Annotated[
+        str, "SMILES string of the molecule for spin state calculations"
+    ],
+    states: Annotated[
+        str,
+        "JSON array of [charge, multiplicity] pairs. Format: [[0,1], [0,3]] (no outer quotes)",
+    ],
+    solvent: Annotated[
+        str,
+        "Solvent environment for calculations (name or SMILES). Empty string for gas phase",
+    ] = "",
+    name: Annotated[
+        str, "Workflow name for identification and tracking"
+    ] = "Spin States Workflow",
+    folder_uuid: Annotated[
+        str,
+        "UUID of folder to organize this workflow. Empty string uses default folder",
+    ] = "",
+    max_credits: Annotated[
+        int, "Maximum credits to spend on this calculation. 0 for no limit"
+    ] = 0,
 ):
     """Submit a spin states workflow to calculate energies of different spin multiplicities.
 
@@ -70,15 +85,20 @@ def submit_spin_states_workflow(
 
     """
     import logging
+
     logger = logging.getLogger(__name__)
 
     # Parse states parameter (required)
     try:
         parsed_states = json.loads(states)
-        if not isinstance(parsed_states, list) or not all(isinstance(s, list) and len(s) == 2 for s in parsed_states):
+        if not isinstance(parsed_states, list) or not all(
+            isinstance(s, list) and len(s) == 2 for s in parsed_states
+        ):
             raise ValueError("states must be a list of [charge, multiplicity] pairs")
     except (json.JSONDecodeError, ValueError) as e:
-        raise ValueError(f"Invalid states format: {states}. Expected JSON list of [charge, multiplicity] pairs like '[[0,1], [0,3]]'. Error: {e}")
+        raise ValueError(
+            f"Invalid states format: {states}. Expected JSON list of [charge, multiplicity] pairs like '[[0,1], [0,3]]'. Error: {e}"
+        )
 
     # Extract just multiplicities (second element of each pair)
     # Spin states workflow expects [1, 3, 5] not [[0,1], [0,3], [0,5]]
@@ -87,7 +107,7 @@ def submit_spin_states_workflow(
     # Build workflow_data
     workflow_data = {
         "states": multiplicities,  # Use just multiplicities, not full pairs
-        "mode": "rapid"
+        "mode": "rapid",
     }
 
     # Handle solvent
@@ -102,7 +122,7 @@ def submit_spin_states_workflow(
         workflow_data=workflow_data,
         name=name,
         folder_uuid=folder_uuid if folder_uuid else None,
-        max_credits=max_credits if max_credits > 0 else None
+        max_credits=max_credits if max_credits > 0 else None,
     )
 
     # Make workflow publicly viewable
